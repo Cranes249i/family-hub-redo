@@ -1,0 +1,140 @@
+/* 家庭事务中心 · 基础样式（素色，主题留到后面做） */
+
+:root {
+  --line: #e3e3e6;
+  --bg: #f4f5f7;
+  --ink: #222;
+  --muted: #666;
+  --accent: #2f6fed;
+  --ok: #067647;
+  --warn: #b42318;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 16px/1.6 system-ui, "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+header {
+  padding: 18px 16px 8px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 14px 24px;
+}
+
+footer {
+  text-align: center;
+  padding: 16px 14px 24px;
+  font-size: 13px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.card h3 {
+  margin: 16px 0 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.3em;
+}
+
+.list li {
+  margin: 6px 0;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.stat {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat b {
+  font-size: 18px;
+}
+
+.stat span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stat.big {
+  grid-column: 1 / -1;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+th, td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+th.num, td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pos { color: var(--ok); }
+.neg { color: var(--warn); }
+.error { color: var(--warn); }
+
+@media (max-width: 480px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+  header h1 { font-size: 20px; }
+}

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家庭事务中心</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>家庭事务中心</h1>
+  <p class="muted">读书会日程 · 网店月报 · 旅行费用分摊 · 政策通知周报 —— 四个实战的汇总页，只读数据，不抓取。</p>
+</header>
+<main>
+
+  <section class="card" id="panel-reading">
+    <h2>读书会日程</h2>
+    <div id="reading-body"></div>
+  </section>
+
+  <section class="card" id="panel-shop">
+    <h2>网店月报</h2>
+    <div id="shop-body"></div>
+  </section>
+
+  <section class="card" id="panel-trip">
+    <h2>旅行费用分摊</h2>
+    <div id="trip-body"></div>
+  </section>
+
+  <section class="card" id="panel-notice">
+    <h2>政策通知周报</h2>
+    <div id="notice-body"></div>
+  </section>
+
+</main>
+<footer class="muted">数据来自 data.js，由 build.py 从四个实战文件夹汇总生成。</footer>
+
+<script src="data.js"></script>
+<script src="split.js"></script>
+<script>
+function fmt(n) { return Number(n).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+function renderReading(data) {
+  const body = document.getElementById("reading-body");
+  const r = data.reading;
+  if (!r) { body.textContent = "暂无数据。"; return; }
+
+  body.appendChild(el("p", "muted", `${r.club || ""} · ${r.venue || ""}`));
+
+  body.appendChild(el("h3", null, "即将举行"));
+  const upcoming = r.events || [];
+  if (!upcoming.length) {
+    body.appendChild(el("p", "muted", "暂无预告场次。"));
+  } else {
+    const ul = el("ul", "list");
+    upcoming.forEach(e => {
+      ul.appendChild(el("li", null, `<b>${e.date}</b> ${e.title}（领读：${e.leader}）<span class="tag">${e.status}</span>`));
+    });
+    body.appendChild(ul);
+  }
+
+  body.appendChild(el("h3", null, "往期回顾"));
+  const past = r.past || [];
+  if (!past.length) {
+    body.appendChild(el("p", "muted", "暂无历史记录。"));
+  } else {
+    const ul = el("ul", "list");
+    past.forEach(p => {
+      ul.appendChild(el("li", null, `${p.date} ${p.book} · 到场 ${p.attendance} 人`));
+    });
+    body.appendChild(ul);
+  }
+}
+
+function renderShop(data) {
+  const body = document.getElementById("shop-body");
+  const s = data.shop;
+  if (!s) { body.textContent = "暂无数据。"; return; }
+
+  body.appendChild(el("p", "muted", `统计月份：${s.month}`));
+
+  const grid = el("div", "grid");
+  grid.appendChild(el("div", "stat", `<b>${fmt(s.total)}</b><span>有效总额（元）</span>`));
+  grid.appendChild(el("div", "stat", `<b>${s.valid_orders}</b><span>有效订单（笔）</span>`));
+  grid.appendChild(el("div", "stat", `<b>${fmt(s.avg)}</b><span>平均客单（元）</span>`));
+  grid.appendChild(el("div", "stat", `<b>${s.refund_orders}</b><span>退款订单（笔）</span>`));
+  grid.appendChild(el("div", "stat", `<b>${fmt(s.refund_amount)}</b><span>退款金额（元）</span>`));
+  grid.appendChild(el("div", "stat", `<b>${s.pending_orders}</b><span>待处理（笔）</span>`));
+  body.appendChild(grid);
+
+  body.appendChild(el("h3", null, "各平台销售额"));
+  const platforms = Object.entries(s.by_platform || {});
+  if (!platforms.length) {
+    body.appendChild(el("p", "muted", "暂无平台数据。"));
+  } else {
+    const ul = el("ul", "list");
+    platforms.forEach(([name, amount]) => ul.appendChild(el("li", null, `${name}：${fmt(amount)} 元`)));
+    body.appendChild(ul);
+  }
+
+  body.appendChild(el("h3", null, "热销商品 Top 5"));
+  const top = (s.top_items || []).slice(0, 5);
+  if (!top.length) {
+    body.appendChild(el("p", "muted", "暂无商品数据。"));
+  } else {
+    const ol = el("ol", "list");
+    top.forEach(([name, qty]) => ol.appendChild(el("li", null, `${name} · 售出 ${qty} 件`)));
+    body.appendChild(ol);
+  }
+}
+
+function renderTrip(data) {
+  const body = document.getElementById("trip-body");
+  const trip = data.trip;
+  if (!trip) { body.textContent = "暂无数据。"; return; }
+
+  let result;
+  try {
+    result = summarize(trip);
+  } catch (e) {
+    body.appendChild(el("p", "error", `分摊计算出错：${e.message}`));
+    return;
+  }
+
+  body.appendChild(el("p", "muted", `${trip.name || ""} · 同行 ${trip.members.length} 人 · 共 ${result.detail.length} 笔费用`));
+  body.appendChild(el("div", "stat big", `<b>${fmt(result.total)}</b><span>总花费（元）</span>`));
+
+  body.appendChild(el("h3", null, "每人应付 / 已付 / 净额"));
+  const table = el("table");
+  table.appendChild(el("thead", null, "<tr><th>人</th><th class='num'>应付</th><th class='num'>已付</th><th class='num'>净额</th></tr>"));
+  const tbody = el("tbody");
+  trip.members.forEach(name => {
+    const net = result.net[name];
+    const cls = net >= 0 ? "pos" : "neg";
+    const sign = net >= 0 ? "+" : "";
+    tbody.appendChild(el("tr", null, `<td>${name}</td><td class="num">${fmt(result.owed[name])}</td><td class="num">${fmt(result.paid[name])}</td><td class="num ${cls}">${sign}${fmt(net)}</td></tr>`));
+  });
+  table.appendChild(tbody);
+  body.appendChild(table);
+
+  body.appendChild(el("h3", null, "最少转账笔数结清"));
+  if (!result.transfers.length) {
+    body.appendChild(el("p", "muted", "大家已经平了，不用转账。"));
+  } else {
+    const ul = el("ul", "list");
+    result.transfers.forEach(t => ul.appendChild(el("li", null, `${t.from} → ${t.to}：${fmt(t.amount)} 元`)));
+    body.appendChild(ul);
+  }
+}
+
+function renderNotice(data) {
+  const body = document.getElementById("notice-body");
+  const n = data.notice;
+  if (!n) { body.textContent = "暂无数据。"; return; }
+
+  body.appendChild(el("p", "muted", `周报日期：${n.date}`));
+  if (n.summary) body.appendChild(el("p", null, n.summary));
+
+  body.appendChild(el("h3", null, "本周与你有关的"));
+  if (n.relatedToYou) {
+    body.appendChild(el("p", null, n.relatedToYou.replace(/\n/g, "<br>")));
+  } else {
+    body.appendChild(el("p", "muted", "本周要点待填写"));
+  }
+
+  if (n.logLines && n.logLines.length) {
+    body.appendChild(el("h3", null, "抓取日志"));
+    const ul = el("ul", "list");
+    n.logLines.forEach(l => ul.appendChild(el("li", null, l)));
+    body.appendChild(ul);
+  }
+}
+
+(function init() {
+  const data = window.DATA || {};
+  renderReading(data);
+  renderShop(data);
+  renderTrip(data);
+  renderNotice(data);
+})();
+</script>
+</body>
+</html>
