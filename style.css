@@ -1,4 +1,4 @@
-/* 家庭事务中心 · 基础样式（素色，主题留到后面做） */
+/* 家庭事务中心 · 方案1：单栏卡片流 */
 
 :root {
   --line: #e3e3e6;
@@ -8,6 +8,11 @@
   --accent: #2f6fed;
   --ok: #067647;
   --warn: #b42318;
+
+  --c-reading: #2f6fed;
+  --c-shop: #0e9f6e;
+  --c-trip: #d97706;
+  --c-notice: #9333ea;
 }
 
 * { box-sizing: border-box; }
@@ -16,11 +21,17 @@ body {
   margin: 0;
   font: 16px/1.6 system-ui, "Microsoft YaHei", sans-serif;
   color: var(--ink);
-  background: var(--bg);
+  background: linear-gradient(180deg, #eef1f6 0%, var(--bg) 220px);
 }
 
 header {
-  padding: 18px 16px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 18px 16px 14px;
+  background: rgba(244, 245, 247, 0.9);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
 }
 
 header h1 {
@@ -29,9 +40,12 @@ header h1 {
 }
 
 main {
-  max-width: 680px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 0 14px 24px;
+  padding: 20px 14px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 footer {
@@ -46,17 +60,63 @@ footer {
 }
 
 .card {
+  position: relative;
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px 18px;
-  margin: 14px 0;
+  border-radius: 16px;
+  padding: 20px 20px 18px;
+  box-shadow: 0 1px 2px rgba(20, 20, 30, 0.04), 0 8px 20px -12px rgba(20, 20, 30, 0.12);
+  border-left: 4px solid var(--line);
+  counter-increment: panel;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
+.card:hover {
+  box-shadow: 0 2px 4px rgba(20, 20, 30, 0.06), 0 14px 28px -14px rgba(20, 20, 30, 0.18);
+  transform: translateY(-1px);
+}
+
+.card::before {
+  content: "0" counter(panel) " / 04";
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+main {
+  counter-reset: panel;
+}
+
+#panel-reading { border-left-color: var(--c-reading); }
+#panel-shop { border-left-color: var(--c-shop); }
+#panel-trip { border-left-color: var(--c-trip); }
+#panel-notice { border-left-color: var(--c-notice); }
+
 .card h2 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
+  padding-right: 54px;
   font-size: 17px;
 }
+
+#panel-reading h2::before,
+#panel-shop h2::before,
+#panel-trip h2::before,
+#panel-notice h2::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+#panel-reading h2::before { background: var(--c-reading); }
+#panel-shop h2::before { background: var(--c-shop); }
+#panel-trip h2::before { background: var(--c-trip); }
+#panel-notice h2::before { background: var(--c-notice); }
 
 .card h3 {
   margin: 16px 0 6px;
@@ -137,4 +197,5 @@ th.num, td.num {
 @media (max-width: 480px) {
   .grid { grid-template-columns: 1fr 1fr; }
   header h1 { font-size: 20px; }
+  .card { padding: 16px 16px 14px; }
 }
