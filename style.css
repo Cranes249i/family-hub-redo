@@ -1,13 +1,15 @@
-/* 家庭事务中心 · 基础样式（素色，主题留到后面做） */
+/* 家庭事务中心 · 方案3：深色主题（深底浅字） */
 
 :root {
-  --line: #e3e3e6;
-  --bg: #f4f5f7;
-  --ink: #222;
-  --muted: #666;
-  --accent: #2f6fed;
-  --ok: #067647;
-  --warn: #b42318;
+  --line: #30333a;
+  --bg: #15171c;
+  --ink: #e8e9ec;
+  --muted: #9aa0ab;
+  --accent: #6ea8ff;
+  --ok: #3ddc97;
+  --warn: #ff6b6b;
+  --card-bg: #1e2026;
+  --tag-bg: #233049;
 }
 
 * { box-sizing: border-box; }
@@ -46,7 +48,7 @@ footer {
 }
 
 .card {
-  background: #fff;
+  background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px 18px;
@@ -78,7 +80,7 @@ footer {
   margin-left: 6px;
   padding: 1px 8px;
   border-radius: 999px;
-  background: #eef2ff;
+  background: var(--tag-bg);
   color: var(--accent);
   font-size: 12px;
 }
