@@ -49,6 +49,10 @@ function renderReading(data) {
 
   body.appendChild(el("p", "muted", `${r.club || ""} · ${r.venue || ""}`));
 
+  if (r.site_url) {
+    body.appendChild(el("p", null, `<a href="${r.site_url}" target="_blank" rel="noopener noreferrer">打开读书会网站</a>`));
+  }
+
   body.appendChild(el("h3", null, "即将举行"));
   const upcoming = r.events || [];
   if (!upcoming.length) {
